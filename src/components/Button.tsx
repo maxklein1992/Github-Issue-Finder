@@ -4,20 +4,20 @@ import { Colors } from "../constants";
 
 interface ButtonProps {
   onPress: () => void;
-  inputText: string | null;
-  title: string | null;
+  disabled?: boolean;
+  title: string;
 }
 
-const Button: FC<ButtonProps> = ({ onPress, inputText, title }) => {
+const Button: FC<ButtonProps> = ({ onPress, disabled, title }) => {
   return (
-    <Pressable onPress={inputText ? onPress : null}>
+    <Pressable onPress={disabled ? null : onPress}>
       <View
         style={[
           styles.btnEnter,
           {
-            backgroundColor: inputText
-              ? Colors.DEFAULT_GREEN
-              : Colors.DEFAULT_GREY,
+            backgroundColor: disabled
+              ? Colors.DEFAULT_GREY
+              : Colors.DEFAULT_GREEN,
           },
         ]}
       >
@@ -29,8 +29,8 @@ const Button: FC<ButtonProps> = ({ onPress, inputText, title }) => {
 
 const styles = StyleSheet.create({
   btnEnter: {
-    width: 100,
-    height: 50,
+    paddingHorizontal: 15,
+    paddingVertical: 15,
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",

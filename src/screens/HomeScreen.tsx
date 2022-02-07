@@ -11,30 +11,51 @@ import {
 import { Colors, Dimensions } from "../constants";
 import axios from "axios";
 import { Button, TextField, SearchItem } from "../components";
-import { FontAwesome5 } from "@expo/vector-icons";
+import {
+  Ionicons,
+  FontAwesome5,
+  Octicons,
+  MaterialCommunityIcons,
+  Entypo,
+} from "@expo/vector-icons";
 
 const HomeScreen = () => {
   const textInput = useRef(null);
   const [inputText, setInputText] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [repos, setRepos] = useState<any[]>([]);
+  const [sort, setSort] = useState<string>("");
+  const [isSortingVisible, setSortingVisible] = useState<boolean>(false);
+  const API_URL = "https://api.github.com";
 
-  const onPressContinue = async () => {
+  useEffect(() => {
+    search();
+  }, [sort]);
+
+  useEffect(() => {
+    isSortingVisible ? null : setSort("");
+  }, [isSortingVisible]);
+
+  console.log(sort);
+
+  const search = async () => {
+    console.log("MMAXXX");
     if (inputText) {
-      let result = inputText.includes("/");
-      if (!result) {
+      let resultInputText = inputText.includes("/");
+      if (!resultInputText) {
         setErrorMessage(
           "Please update your search in the correct format, i.e. 'organization/repo name."
         );
       } else {
         setErrorMessage("");
         var [organization, repoName] = inputText.split("/");
-        console.log(organization);
         try {
-          const result = await axios(
-            `https://api.github.com/repos/${organization}/${repoName}/issues?per_page=10`
+          const resultFetch = await axios(
+            sort
+              ? `${API_URL}/repos/${organization}/${repoName}/issues?per_page=10&sort=${sort}&order=desc`
+              : `${API_URL}/repos/${organization}/${repoName}/issues?per_page=10&order=desc`
           );
-          setRepos(result);
+          setRepos(resultFetch);
         } catch (err) {
           console.log(err);
           setErrorMessage("There are no results. Please try again.");
@@ -54,17 +75,79 @@ const HomeScreen = () => {
           Please enter the Organization and Repo name and press on "Enter".
         </Text>
         <View style={styles.searchContainer}>
-          <TextField
-            ref={textInput}
-            placeholder="Vercel/vercel"
-            onChangeText={(text) => setInputText(text)}
-            password={false}
-          />
-          <Button
-            onPress={onPressContinue}
-            inputText={inputText}
-            title="Enter"
-          />
+          <View style={styles.basicSearchContainer}>
+            <TextField
+              ref={textInput}
+              placeholder="Vercel/vercel"
+              onChangeText={(text) => setInputText(text)}
+              password={false}
+            />
+            <Button onPress={search} disabled={!inputText} title="Enter" />
+          </View>
+          <View style={styles.advancedSearchContainer}>
+            <Button
+              onPress={
+                isSortingVisible
+                  ? () => setSortingVisible(false)
+                  : () => setSortingVisible(true)
+              }
+              title={isSortingVisible ? "Hide and clear" : "Sort by"}
+            />
+            <View
+              style={[
+                styles.sortIconsContainer,
+                { display: isSortingVisible ? "flex" : "none" },
+              ]}
+            >
+              <Pressable
+                onPress={() =>
+                  sort === "reactions" ? setSort("") : setSort("reactions")
+                }
+              >
+                <Ionicons
+                  name="thumbs-up-sharp"
+                  size={18}
+                  color={
+                    sort === "reactions"
+                      ? Colors.DEFAULT_WHITE
+                      : Colors.DEFAULT_GREEN
+                  }
+                />
+              </Pressable>
+              <Pressable
+                onPress={() =>
+                  sort === "reactions-eyes"
+                    ? setSort("")
+                    : setSort("reactions-eyes")
+                }
+              >
+                <Octicons
+                  name="eye"
+                  size={18}
+                  color={
+                    sort === "reactions-eyes"
+                      ? Colors.DEFAULT_WHITE
+                      : Colors.DEFAULT_GREEN
+                  }
+                />
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  setSort("reactions-heart");
+                }}
+              >
+                <Entypo
+                  name="heart"
+                  size={18}
+                  color={
+                    sort === "reactions-heart"
+                      ? Colors.DEFAULT_WHITE
+                      : Colors.DEFAULT_GREEN
+                  }
+                />
+              </Pressable>
+            </View>
+          </View>
         </View>
         <View style={styles.resultsContainer}>
           {errorMessage ? (
@@ -120,11 +203,30 @@ const styles = StyleSheet.create({
     color: Colors.DEFAULT_WHITE,
   },
   searchContainer: {
+    flex: 1,
+    flexDirection: "column",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  basicSearchContainer: {
+    width: "100%",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    height: 100,
     marginBottom: 20,
+  },
+  advancedSearchContainer: {
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    alignItems: "center",
+  },
+  sortIconsContainer: {
+    flex: 0.75,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginLeft: 30,
   },
   resultsContainer: {
     flexDirection: "row",
