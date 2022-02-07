@@ -15,9 +15,9 @@ import { FontAwesome5 } from "@expo/vector-icons";
 
 const HomeScreen = () => {
   const textInput = useRef(null);
-  const [inputText, setInputText] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [repos, setRepos] = useState([]);
+  const [inputText, setInputText] = useState<string>("");
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const [repos, setRepos] = useState<any[]>([]);
 
   const onPressContinue = async () => {
     if (inputText) {
