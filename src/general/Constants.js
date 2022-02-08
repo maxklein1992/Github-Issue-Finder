@@ -1,5 +1,6 @@
 export default {
   GITHUB_API_URL: "https://api.github.com",
+  ITEMS_PER_PAGE: 20,
   Colors: {
     DEFAULT_BLACK: "#0E122B",
     DEFAULT_GREEN: "#0A8791",

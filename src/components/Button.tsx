@@ -10,7 +10,7 @@ interface ButtonProps {
 
 const Button: FC<ButtonProps> = ({ onPress, disabled, title }) => {
   return (
-    <Pressable onPress={disabled ? null : onPress}>
+    <Pressable onPress={!disabled && onPress}>
       <View
         style={[
           styles.btnEnter,
@@ -33,8 +33,6 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     borderRadius: 10,
     alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#244DB7",
   },
   textEnter: {
     color: Constants.Colors.DEFAULT_WHITE,

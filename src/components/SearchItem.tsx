@@ -5,17 +5,21 @@ import { EvilIcons } from "@expo/vector-icons";
 
 interface SearchItemProps {
   id: string | null;
-  html_url: string | null;
+  htmlUrl: string | null;
   title: string | null;
 }
 
-const SearchItem: FC<SearchItemProps> = ({ id, html_url, title }) => {
+const SearchItem: FC<SearchItemProps> = ({ id, htmlUrl, title }) => {
   return (
     <View style={styles.resultsItemContainer}>
       <View style={styles.resultsItemHeader}>
         <Text style={styles.resultsItemId}>{`ID: #${id}`}</Text>
-        <Pressable onPress={() => Linking.openURL(html_url)}>
-          <EvilIcons name="search" size={18} color="white" />
+        <Pressable onPress={() => Linking.openURL(htmlUrl)}>
+          <EvilIcons
+            name="search"
+            size={18}
+            color={Constants.Colors.DEFAULT_WHITE}
+          />
         </Pressable>
       </View>
 

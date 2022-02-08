@@ -3,74 +3,66 @@ import {
   View,
   Text,
   SafeAreaView,
-  Alert,
   FlatList,
   StyleSheet,
   Pressable,
   ActivityIndicator,
 } from "react-native";
-import { Colors, Dimensions, Constants } from "../general";
+import { Dimensions, Constants } from "../general";
 import axios from "axios";
 import { Button, TextField, SearchItem } from "../components";
-import {
-  Ionicons,
-  FontAwesome5,
-  Octicons,
-  MaterialCommunityIcons,
-  Entypo,
-} from "@expo/vector-icons";
+import { Ionicons, FontAwesome5, Octicons, Entypo } from "@expo/vector-icons";
 
 const HomeScreen = () => {
-  const textInput = useRef(null);
   const flatListRef = useRef();
   const [inputText, setInputText] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
-  const [pages, setPages] = useState<number>(10);
+  const [pageIndex, setPageIndex] = useState<number>(0);
   const [repos, setRepos] = useState<any[]>([]);
   const [sort, setSort] = useState<string>("");
   const [isSortingVisible, setSortingVisible] = useState<boolean>(false);
-  const [isLoading, setLoading] = useState<boolean>(true);
-  console.log(pages);
+  const [isLoading, setLoading] = useState<boolean>(false);
+  console.log(pageIndex);
 
   useEffect(() => {
-    isSortingVisible ? null : setSort("");
+    !isSortingVisible && setSort("");
   }, [isSortingVisible]);
 
   useEffect(() => {
-    searchHandler();
+    searchHandler(0);
   }, [sort]);
 
-  console.log(sort);
-
-  const handleLoadMore = () => {
-    setPages(pages + 10);
-    searchHandler();
+  const updatePageIndex = (index: number) => {
+    setPageIndex(index);
   };
 
-  const searchHandler = async () => {
+  const searchHandler = async (index: number) => {
+    if (!inputText) {
+      return;
+    }
     setLoading(true);
-    if (inputText) {
-      let resultInputText = inputText.includes("/");
-      if (!resultInputText) {
-        setErrorMessage(
-          "Please update your search in the correct format, i.e. 'organization/repo name."
-        );
-      } else {
-        setErrorMessage("");
-        var [organization, repoName] = inputText.split("/");
-        try {
-          const resultFetch = await axios(
-            sort
-              ? `${Constants.GITHUB_API_URL}/repos/${organization}/${repoName}/issues?per_page=${pages}&sort=${sort}&order=desc`
-              : `${Constants.GITHUB_API_URL}/repos/${organization}/${repoName}/issues?per_page=${pages}&order=desc`
-          );
-          setRepos(resultFetch);
-          setLoading(false);
-        } catch (err) {
-          console.log(err);
-          setErrorMessage("There are no results. Please try again.");
-        }
-      }
+    setRepos([]);
+    const resultInputText = inputText.includes("/");
+    if (!resultInputText) {
+      setErrorMessage(
+        "Please update your search in the correct format, i.e. 'organization/repo name."
+      );
+      return;
+    }
+    const [organization, repoName] = inputText.split("/");
+    try {
+      const resultFetch = await axios(
+        sort
+          ? `${Constants.GITHUB_API_URL}/repos/${organization}/${repoName}/issues?per_page=${Constants.ITEMS_PER_PAGE}&page=${index}&sort=${sort}&order=desc`
+          : `${Constants.GITHUB_API_URL}/repos/${organization}/${repoName}/issues?per_page=${Constants.ITEMS_PER_PAGE}&page=${index}&order=desc`
+      );
+      setErrorMessage("");
+      //setPageIndex(page);
+      setRepos(resultFetch);
+      setLoading(false);
+      updatePageIndex(index);
+    } catch (err) {
+      setErrorMessage("There are no results. Please try again.");
     }
   };
 
@@ -91,24 +83,19 @@ const HomeScreen = () => {
         <View style={styles.searchContainer}>
           <View style={styles.basicSearchContainer}>
             <TextField
-              ref={textInput}
               placeholder="Vercel/vercel"
               onChangeText={(text) => setInputText(text)}
               password={false}
             />
             <Button
-              onPress={() => searchHandler()}
+              onPress={() => searchHandler(0)}
               disabled={!inputText}
               title="Enter"
             />
           </View>
           <View style={styles.advancedSearchContainer}>
             <Button
-              onPress={
-                isSortingVisible
-                  ? () => setSortingVisible(false)
-                  : () => setSortingVisible(true)
-              }
+              onPress={() => setSortingVisible(!isSortingVisible)}
               title={isSortingVisible ? "Hide and clear" : "Sort by"}
             />
             <View
@@ -176,24 +163,25 @@ const HomeScreen = () => {
             renderItem={({ item }) => (
               <SearchItem
                 id={item.id}
-                html_url={item.html_url}
+                htmlUrl={item.html_url}
                 title={item.title}
               />
             )}
             refreshing={isLoading}
             ListEmptyComponent={
-              errorMessage ? (
-                <Text style={styles.errorMessage}>{errorMessage}</Text>
-              ) : isLoading && repos.data ? (
+              isLoading ? (
                 <ActivityIndicator
-                  size={20}
-                  color={Constants.Colors.DEFAULT_GREEN}
+                  size={30}
+                  color={Constants.Colors.DEFAULT_WHITE}
                 />
+              ) : errorMessage ? (
+                <Text style={styles.errorMessage}>{errorMessage}</Text>
               ) : null
             }
             keyExtractor={(item) => item.id}
-            showsVerticalScrollIndicator={false}
-            onEndReached={handleLoadMore}
+            showsVerticalScrollIndicator={true}
+            onEndReachedThreshold={0}
+            onEndReached={() => searchHandler(pageIndex + 1)}
           />
         </View>
       </View>
