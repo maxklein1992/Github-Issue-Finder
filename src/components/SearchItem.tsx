@@ -1,6 +1,6 @@
 import React, { FC } from "react";
 import { Pressable, Text, StyleSheet, View, Linking } from "react-native";
-import { Colors } from "../constants";
+import { Constants } from "../general";
 import { EvilIcons } from "@expo/vector-icons";
 
 interface SearchItemProps {
@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
   resultsItemContainer: {
     marginBottom: 10,
     borderBottomWidth: 3,
-    borderBottomColor: Colors.DEFAULT_GREEN,
+    borderBottomColor: Constants.Colors.DEFAULT_GREEN,
     paddingBottom: 10,
     width: "100%",
   },
@@ -39,12 +39,12 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   resultsItemId: {
-    color: Colors.DEFAULT_WHITE,
+    color: Constants.Colors.DEFAULT_WHITE,
     fontSize: 10,
     fontFamily: "Poppins_700Bold",
   },
   resultsItemTitle: {
-    color: Colors.DEFAULT_GREEN,
+    color: Constants.Colors.DEFAULT_GREEN,
     fontSize: 14,
     fontFamily: "Poppins_700Bold",
   },

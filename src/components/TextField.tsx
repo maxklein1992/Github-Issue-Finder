@@ -1,6 +1,6 @@
 import React from "react";
 import { TextInput, TextInputProps, StyleSheet, View } from "react-native";
-import { Colors, Dimensions } from "../constants";
+import { Constants, Dimensions } from "../general";
 
 interface TextFieldProps extends TextInputProps {
   password?: boolean;
@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: "white",
     borderBottomWidth: 5,
-    borderBottomColor: Colors.DEFAULT_GREEN,
+    borderBottomColor: Constants.Colors.DEFAULT_GREEN,
     width: Dimensions.setWidth(60),
     height: 50,
   },

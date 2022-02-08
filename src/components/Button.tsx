@@ -1,6 +1,6 @@
 import React, { FC } from "react";
 import { Pressable, Text, StyleSheet, View } from "react-native";
-import { Colors } from "../constants";
+import { Constants } from "../general";
 
 interface ButtonProps {
   onPress: () => void;
@@ -16,8 +16,8 @@ const Button: FC<ButtonProps> = ({ onPress, disabled, title }) => {
           styles.btnEnter,
           {
             backgroundColor: disabled
-              ? Colors.DEFAULT_GREY
-              : Colors.DEFAULT_GREEN,
+              ? Constants.Colors.DEFAULT_GREY
+              : Constants.Colors.DEFAULT_GREEN,
           },
         ]}
       >
@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#244DB7",
   },
   textEnter: {
-    color: Colors.DEFAULT_WHITE,
+    color: Constants.Colors.DEFAULT_WHITE,
     alignItems: "center",
     fontFamily: "Poppins_700Bold",
   },

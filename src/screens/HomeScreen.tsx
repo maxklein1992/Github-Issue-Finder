@@ -7,8 +7,9 @@ import {
   FlatList,
   StyleSheet,
   Pressable,
+  ActivityIndicator,
 } from "react-native";
-import { Colors, Dimensions } from "../constants";
+import { Colors, Dimensions, Constants } from "../general";
 import axios from "axios";
 import { Button, TextField, SearchItem } from "../components";
 import {
@@ -21,25 +22,33 @@ import {
 
 const HomeScreen = () => {
   const textInput = useRef(null);
+  const flatListRef = useRef();
   const [inputText, setInputText] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [pages, setPages] = useState<number>(10);
   const [repos, setRepos] = useState<any[]>([]);
   const [sort, setSort] = useState<string>("");
   const [isSortingVisible, setSortingVisible] = useState<boolean>(false);
-  const API_URL = "https://api.github.com";
-
-  useEffect(() => {
-    search();
-  }, [sort]);
+  const [isLoading, setLoading] = useState<boolean>(true);
+  console.log(pages);
 
   useEffect(() => {
     isSortingVisible ? null : setSort("");
   }, [isSortingVisible]);
 
+  useEffect(() => {
+    searchHandler();
+  }, [sort]);
+
   console.log(sort);
 
-  const search = async () => {
-    console.log("MMAXXX");
+  const handleLoadMore = () => {
+    setPages(pages + 10);
+    searchHandler();
+  };
+
+  const searchHandler = async () => {
+    setLoading(true);
     if (inputText) {
       let resultInputText = inputText.includes("/");
       if (!resultInputText) {
@@ -52,10 +61,11 @@ const HomeScreen = () => {
         try {
           const resultFetch = await axios(
             sort
-              ? `${API_URL}/repos/${organization}/${repoName}/issues?per_page=10&sort=${sort}&order=desc`
-              : `${API_URL}/repos/${organization}/${repoName}/issues?per_page=10&order=desc`
+              ? `${Constants.GITHUB_API_URL}/repos/${organization}/${repoName}/issues?per_page=${pages}&sort=${sort}&order=desc`
+              : `${Constants.GITHUB_API_URL}/repos/${organization}/${repoName}/issues?per_page=${pages}&order=desc`
           );
           setRepos(resultFetch);
+          setLoading(false);
         } catch (err) {
           console.log(err);
           setErrorMessage("There are no results. Please try again.");
@@ -68,7 +78,11 @@ const HomeScreen = () => {
     <SafeAreaView style={styles.safeAreaView}>
       <View style={styles.container}>
         <View style={styles.headerContainer}>
-          <FontAwesome5 name="github-alt" size={24} color="white" />
+          <FontAwesome5
+            name="github-alt"
+            size={24}
+            color={Constants.Colors.DEFAULT_WHITE}
+          />
           <Text style={styles.headerTitle}>Github Issue Finder App</Text>
         </View>
         <Text style={styles.textTile}>
@@ -82,7 +96,11 @@ const HomeScreen = () => {
               onChangeText={(text) => setInputText(text)}
               password={false}
             />
-            <Button onPress={search} disabled={!inputText} title="Enter" />
+            <Button
+              onPress={() => searchHandler()}
+              disabled={!inputText}
+              title="Enter"
+            />
           </View>
           <View style={styles.advancedSearchContainer}>
             <Button
@@ -100,40 +118,42 @@ const HomeScreen = () => {
               ]}
             >
               <Pressable
-                onPress={() =>
-                  sort === "reactions" ? setSort("") : setSort("reactions")
-                }
+                onPress={() => {
+                  sort === "reactions" ? setSort("") : setSort("reactions");
+                }}
               >
                 <Ionicons
                   name="thumbs-up-sharp"
                   size={18}
                   color={
                     sort === "reactions"
-                      ? Colors.DEFAULT_WHITE
-                      : Colors.DEFAULT_GREEN
+                      ? Constants.Colors.DEFAULT_WHITE
+                      : Constants.Colors.DEFAULT_GREEN
                   }
                 />
               </Pressable>
               <Pressable
-                onPress={() =>
+                onPress={() => {
                   sort === "reactions-eyes"
                     ? setSort("")
-                    : setSort("reactions-eyes")
-                }
+                    : setSort("reactions-eyes");
+                }}
               >
                 <Octicons
                   name="eye"
                   size={18}
                   color={
                     sort === "reactions-eyes"
-                      ? Colors.DEFAULT_WHITE
-                      : Colors.DEFAULT_GREEN
+                      ? Constants.Colors.DEFAULT_WHITE
+                      : Constants.Colors.DEFAULT_GREEN
                   }
                 />
               </Pressable>
               <Pressable
                 onPress={() => {
-                  setSort("reactions-heart");
+                  sort === "reactions-heart"
+                    ? setSort("")
+                    : setSort("reactions-heart");
                 }}
               >
                 <Entypo
@@ -141,8 +161,8 @@ const HomeScreen = () => {
                   size={18}
                   color={
                     sort === "reactions-heart"
-                      ? Colors.DEFAULT_WHITE
-                      : Colors.DEFAULT_GREEN
+                      ? Constants.Colors.DEFAULT_WHITE
+                      : Constants.Colors.DEFAULT_GREEN
                   }
                 />
               </Pressable>
@@ -150,22 +170,31 @@ const HomeScreen = () => {
           </View>
         </View>
         <View style={styles.resultsContainer}>
-          {errorMessage ? (
-            <Text style={styles.errorMessage}>{errorMessage}</Text>
-          ) : (
-            <FlatList
-              data={repos.data}
-              renderItem={({ item }) => (
-                <SearchItem
-                  id={item.id}
-                  html_url={item.html_url}
-                  title={item.title}
+          <FlatList
+            ref={flatListRef}
+            data={repos.data}
+            renderItem={({ item }) => (
+              <SearchItem
+                id={item.id}
+                html_url={item.html_url}
+                title={item.title}
+              />
+            )}
+            refreshing={isLoading}
+            ListEmptyComponent={
+              errorMessage ? (
+                <Text style={styles.errorMessage}>{errorMessage}</Text>
+              ) : isLoading && repos.data ? (
+                <ActivityIndicator
+                  size={20}
+                  color={Constants.Colors.DEFAULT_GREEN}
                 />
-              )}
-              keyExtractor={(item) => item.id}
-              showsVerticalScrollIndicator={false}
-            />
-          )}
+              ) : null
+            }
+            keyExtractor={(item) => item.id}
+            showsVerticalScrollIndicator={false}
+            onEndReached={handleLoadMore}
+          />
         </View>
       </View>
     </SafeAreaView>
@@ -175,7 +204,7 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   safeAreaView: {
     flex: 1,
-    backgroundColor: Colors.DEFAULT_BLACK,
+    backgroundColor: Constants.Colors.DEFAULT_BLACK,
   },
   container: {
     flex: 1,
@@ -192,7 +221,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontFamily: "Poppins_400Regular",
-    color: Colors.DEFAULT_WHITE,
+    color: Constants.Colors.DEFAULT_WHITE,
     marginLeft: 15,
   },
   textTile: {
@@ -200,7 +229,7 @@ const styles = StyleSheet.create({
     marginTop: 50,
     marginBottom: 20,
     fontFamily: "Poppins_400Regular",
-    color: Colors.DEFAULT_WHITE,
+    color: Constants.Colors.DEFAULT_WHITE,
   },
   searchContainer: {
     flex: 1,
@@ -233,7 +262,7 @@ const styles = StyleSheet.create({
     height: 300,
   },
   errorMessage: {
-    color: Colors.DEFAULT_RED,
+    color: Constants.Colors.DEFAULT_RED,
     fontSize: 16,
     fontFamily: "Poppins_400Regular",
   },
