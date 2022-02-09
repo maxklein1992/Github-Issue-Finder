@@ -9,20 +9,22 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Dimensions, Constants } from "../general";
-import axios from "axios";
+//import axios from "axios";
 import { Button, TextField, SearchItem } from "../components";
 import { Ionicons, FontAwesome5, Octicons, Entypo } from "@expo/vector-icons";
+import { Repo } from "../types";
+import axios from "axios";
 
 const HomeScreen = () => {
   const flatListRef = useRef();
   const [inputText, setInputText] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [pageIndex, setPageIndex] = useState<number>(0);
-  const [repos, setRepos] = useState<any[]>([]);
+  const [repos, setRepos] = useState<Repo[]>([]);
   const [sort, setSort] = useState<string>("");
   const [isSortingVisible, setSortingVisible] = useState<boolean>(false);
   const [isLoading, setLoading] = useState<boolean>(false);
-  console.log(pageIndex);
+  console.log(repos);
 
   useEffect(() => {
     !isSortingVisible && setSort("");
@@ -57,8 +59,7 @@ const HomeScreen = () => {
           : `${Constants.GITHUB_API_URL}/repos/${organization}/${repoName}/issues?per_page=${Constants.ITEMS_PER_PAGE}&page=${index}&order=desc`
       );
       setErrorMessage("");
-      //setPageIndex(page);
-      setRepos(resultFetch);
+      setRepos(resultFetch.data);
       setLoading(false);
       updatePageIndex(index);
     } catch (err) {
@@ -159,11 +160,11 @@ const HomeScreen = () => {
         <View style={styles.resultsContainer}>
           <FlatList
             ref={flatListRef}
-            data={repos.data}
+            data={repos}
             renderItem={({ item }) => (
               <SearchItem
                 id={item.id}
-                htmlUrl={item.html_url}
+                htmlUrl={item.htmlUrl}
                 title={item.title}
               />
             )}
