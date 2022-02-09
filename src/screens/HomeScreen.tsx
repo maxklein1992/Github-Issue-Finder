@@ -24,7 +24,6 @@ const HomeScreen = () => {
   const [sort, setSort] = useState<string>("");
   const [isSortingVisible, setSortingVisible] = useState<boolean>(false);
   const [isLoading, setLoading] = useState<boolean>(false);
-  console.log(repos);
 
   useEffect(() => {
     !isSortingVisible && setSort("");
